@@ -147,3 +147,61 @@ The `src/legacy/` folder contains two earlier implementations that provide alter
 - **Parallel Processing**: Multiple researchers work simultaneously
 - **Speed Optimized**: Faster report generation through concurrency
 - **MCP Support**: Extensive Model Context Protocol integration
+
+## Non-LangGraph browser UI and CLI
+
+If you prefer to run Open Deep Research without the LangGraph Studio UI, the
+repository includes a lightweight browser front end and a CLI wrapper that
+generate a Markdown report by default.
+
+- CLI: Run a quick report from the command line:
+
+```powershell
+# Windows / PowerShell example
+python -m open_deep_research.cli "Write a short literature review about transformers in NLP" --out review.md
+```
+
+- Browser UI: Start the minimal Flask app and open it in your browser:
+
+```powershell
+python -m open_deep_research.web
+# Then visit http://127.0.0.1:5000/
+```
+
+Both the CLI and the web UI call a simplified runner that creates a focused
+research brief and then generates a final report (Markdown) using the
+configured LLM. Ensure your model API keys and configuration are set via
+environment variables or `.env` before running.
+
+Note: This simplified flow intentionally bypasses the LangGraph runtime and
+the Studio UI; it provides a non-proprietary way to generate reports locally.
+
+### FastAPI endpoints (preferred for orchestration)
+
+If you'd like HTTP endpoints for orchestration (without LangGraph Studio or tracing),
+use the FastAPI app included in `src/open_deep_research/api.py`.
+
+Start the API with Uvicorn (PowerShell):
+
+```powershell
+python -m uvicorn open_deep_research.api:app --host 127.0.0.1 --port 8000
+# or
+python -m open_deep_research.api
+```
+
+POST /run example (PowerShell):
+
+```powershell
+# Send a quick request using curl (PowerShell syntax)
+curl -X POST "http://127.0.0.1:8000/run" -H "Content-Type: application/json" -d '{"topic": "Write a literature review about contrastive learning"}'
+```
+
+You can also pass an `out` query parameter to write and download the report as a file:
+
+```powershell
+curl -X POST "http://127.0.0.1:8000/run?out=review.md" -H "Content-Type: application/json" -d '{"topic": "Topic text..."}' --output review.md
+```
+
+The FastAPI endpoints call the compiled `deep_researcher` workflow directly and
+return the final report as Markdown. This avoids LangGraph Studio/tracing while
+retaining the LangGraph-based orchestration internals.
